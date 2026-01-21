@@ -1,5 +1,4 @@
 # DiloConmigo
-# Dilo Conmigo
 Plataforma Open Source Interactiva para la Rehabilitación del Habla en Pacientes Hipoacúsicos
 
 ## Resumen Ejecutivo
