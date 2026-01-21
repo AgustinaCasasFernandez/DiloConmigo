@@ -7,7 +7,7 @@ Plataforma Open Source Interactiva para la Rehabilitación del Habla en Paciente
 
 El software utiliza algoritmos de Procesamiento Digital de Señales (DSP) y modelos de Inteligencia Artificial para evaluar tres dimensiones críticas del habla: calidad vocal, inteligibilidad y prosodia.
 
-Este desarrollo constituye el **Proyecto Final de Carrera de Bioingeniería** en el Instituto Tecnológico de Buenos Aires (ITBA), finalizado en diciembre de 2025.
+Este desarrollo constituye el **Proyecto Final de Carrera de Bioingeniería** finalizado en diciembre de 2025, de autora Agustina Casas.
 
 ---
 
