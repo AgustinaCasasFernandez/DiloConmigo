@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+
+{% block title %}Inicio - Dilo Conmigo{% endblock %}
+
+{% block content %}
+
+<section id="bienvenida" class="hero-section">
+    <span id="acerca-de" style="position: absolute; top: -100px;"></span>
+
+    <div class="hero-content">
+        <span class="badge" style="margin-top: 2rem;" >Rehabilitación del Habla</span>
+        
+        <h1 class="hero-title">Tu voz a tu ritmo</h1>
+        
+        <p class="hero-text">
+            <strong class="text-green">Dilo Conmigo</strong> está diseñada para acompañarte en tu proceso de rehabilitación. 
+            Te brindamos herramientas prácticas en un <strong class="text-green">espacio seguro, sin juicios ni presiones</strong>, 
+            para que recuperes la confianza al hablar desde cualquier lugar.
+        </p>
+        
+        <div style="margin-top: 2rem;">
+            <a href="#practicas" class="cta-button">Comenzar a practicar</a>
+        </div>
+
+        <p class="hero-text" style="font-size: 0.90rem; margin-top: 3rem;">
+            <strong class="text-green">Recuerda</strong>: Para obtener mejores resultados, selecciona tu tipo de voz 
+            (<strong class="text-green">Neutro, Masculino o Femenino</strong>) en la barra superior.
+        </p>
+    </div>
+</section>
+
+<section id="practicas" class="section-centered">
+    <h2>Prácticas</h2>
+    <p style="color: #666; margin-bottom: 1.5rem;">Elegí una de las siguientes prácticas para comenzar:</p>
+    <div class="grid-practicas">
+        <a href="/practica1" class="button">Fonemas</a>
+        <a href="/practica2" class="button">Sílabas</a>
+        <a href="/practica3" class="button">Palabras</a>
+        <a href="/practica4" class="button">Frases</a>
+    </div>
+</section>
+
+<section id="historial" class="section-centered">
+    <span class="badge">Tu Progreso</span>
+    
+    <h2>Mejores Reportes</h2>
+    
+    {% if history and history|length > 0 %}
+      <p style="color: #666; margin-bottom: 2rem;">Aquí están tus 10 mejores reportes generados. ¡Sigue así!</p>
+      
+      <div class="history-list">
+        {% for item in history %}
+          <a href="{{ url_for('static', filename=item.static_path) }}" class="history-item" target="_blank">
+            <div class="history-score-box" style="background-color: {{ '#4CAF50' if item.score >= 80 else '#FFC107' if item.score >= 60 else '#f44336' }};">
+              <span class="history-score">{{ item.score }}</span>
+              <span class="history-score-label">pts</span>
+            </div>
+            
+            <div class="history-details">
+              <span class="history-label">{{ item.label }}</span>
+              <span class="history-practice">{{ item.practice_name }}</span>
+            </div>
+            
+            <div class="history-download-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+              </svg>
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="history-item" style="display: block; text-align: center; cursor: default;">
+          <p style="margin-bottom: 0.5rem; font-weight: 600; color: #555;">Aún no has generado ningún reporte.</p>
+          <small style="color: #888;">¡Completá un ejercicio y presioná "Descargar Reporte" para ver tu progreso aquí!</small>
+      </div>
+    {% endif %}
+
+</section>
+
+<style>
+  /* --- ESTILOS GENERALES Y COLORES --- */
+  :root {
+      --green-soft: #e8f5e9;  
+      --green-text: #2e7d32;  
+      --green-border: #81c784; 
+      --green-hover: #43a047;
+      --card-shadow: 0 4px 20px rgba(0,0,0,0.04);
+  }
+
+  /* --- FIX FOOTER (Sin líneas) --- */
+  footer {
+      border: none !important; /* Quita todos los bordes */
+      border-top: none !important;
+      box-shadow: none !important;
+      margin-top: 4rem;
+      padding-top: 1rem;
+  }
+
+  .section-centered {
+      text-align: center;
+      margin-bottom: 4rem;
+  }
+
+  /* --- HERO SECTION --- */
+  .hero-section {
+      text-align: center;
+      padding: 5rem 2rem;
+      margin-bottom: 4rem;
+      background: linear-gradient(180deg, #ffffff 0%, #f1f8f3 100%);
+      border: 1px solid #e1e4e8;
+      border-radius: 20px;
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+  }
+  
+  .hero-section::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: var(--green-text);
+      opacity: 0.8;
+  }
+
+  .badge {
+      display: inline-block;
+      background-color: var(--green-soft);
+      color: var(--green-text);
+      padding: 0.4rem 1rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      /* Reduje este margen para que no empuje tanto hacia abajo */
+      margin-bottom: 0.8rem; 
+      border: 1px solid #c8e6c9;
+  }
+  
+  /* Ajuste específico para acercar el título al badge en el historial */
+  #historial h2 {
+      margin-top: 0.2rem;
+  }
+
+  .hero-title {
+      font-size: 3rem;
+      margin: 0 0 1.5rem 0;
+      color: #2b2b2b;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+  }
+
+  .hero-text {
+      font-size: 1.25rem;
+      color: #555;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.7;
+  }
+  
+  .hero-text strong {
+      color: var(--green-text);
+      font-weight: 600;
+  }
+
+  /* --- CTA BUTTON --- */
+  .cta-button {
+      padding: 1rem 2.2rem !important;
+      font-size: 1.1rem !important;
+      border: 2px solid var(--green-text) !important;
+      color: var(--green-text) !important;
+      font-weight: 700 !important;
+      background-color: transparent !important;
+      border-radius: 50px !important;
+  }
+
+  .cta-button:hover {
+      background-color: var(--green-soft) !important;
+      border-color: var(--green-text) !important;
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(46, 125, 50, 0.2) !important;
+  }
+
+  /* --- PRÁCTICAS --- */
+  .grid-practicas {
+      display: flex; 
+      flex-wrap: wrap; 
+      gap: 1rem; 
+      justify-content: center;
+      margin-top: 1rem;
+  }
+
+  .grid-practicas .button {
+      background-color: var(--green-text) !important;
+      color: white !important;
+      border: none !important;
+      font-weight: 600;
+      padding: 0.8rem 1.5rem !important;
+      border-radius: 12px !important;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      box-shadow: 0 4px 6px rgba(46, 125, 50, 0.2);
+      min-width: 120px;
+  }
+
+  .grid-practicas .button:hover {
+      background-color: var(--green-hover) !important;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px rgba(46, 125, 50, 0.3);
+  }
+
+  /* --- HISTORIAL (ESTILO HERO) --- */
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 650px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  
+  .history-item {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(180deg, #ffffff 0%, #f1f8f3 100%);
+    border: 1px solid #e1e4e8;
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+    position: relative;
+    overflow: hidden;
+    padding: 1.2rem; 
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .history-item::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--green-text);
+      opacity: 0.6;
+  }
+  
+  .history-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(46, 125, 50, 0.15);
+  }
+  
+  .history-score-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    color: white;
+    font-weight: bold;
+    width: 55px; 
+    height: 55px; 
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1;
+  }
+  
+  .history-score { font-size: 1.3rem; line-height: 1; }
+  .history-score-label { font-size: 0.6rem; line-height: 1; text-transform: uppercase; margin-top: 2px; opacity: 0.9; }
+  
+  .history-details { display: flex; flex-direction: column; margin-left: 1.2rem; flex-grow: 1; z-index: 1; }
+  .history-label { font-size: 1.05rem; font-weight: 700; color: #333; margin-bottom: 2px; }
+  .history-practice { font-size: 0.9rem; color: #777; }
+  
+  .history-download-icon {
+    width: 24px; height: 24px; 
+    color: #b0bec5; 
+    flex-shrink: 0; margin-left: 1rem; transition: color 0.3s;
+    z-index: 1;
+  }
+  
+  .history-item:hover .history-download-icon { 
+      color: var(--green-text); 
+      transform: scale(1.1);
+  }
+</style>
+
+{% endblock %}

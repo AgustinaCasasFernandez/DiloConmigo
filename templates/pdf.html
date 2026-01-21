@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Informe de Rehabilitación</title>
+    <style>
+        @page { 
+            size: A4; 
+            margin: 1.5cm; 
+            @bottom-center {
+                content: "Página " counter(page) " de " counter(pages);
+                font-size: 9px;
+                color: #999;
+            }
+        }
+        body { 
+            font-family: 'Helvetica', sans-serif; 
+            font-size: 11px; 
+            color: #333; 
+            line-height: 1.3; 
+        }
+        
+        /* Encabezado */
+        .header-container {
+            display: block;
+            text-align: right;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .meta-item { font-size: 11px; color: #555; margin-bottom: 3px; }
+        .meta-label { font-weight: bold; color: #2e7d32; text-transform: uppercase; font-size: 10px; margin-right: 5px; }
+
+        /* Score Box */
+        .score-box {
+            background: #f1f8e9; 
+            border: 1px solid #c5e1a5;
+            padding: 12px; 
+            border-radius: 5px; 
+            text-align: center; 
+            margin-bottom: 20px;
+        }
+        .score-number { font-size: 32px; color: #2e7d32; font-weight: bold; }
+        .advice-text { font-style: italic; color: #555; margin-top: 5px; font-size: 14px; }
+        .advice-list { display: inline-block; text-align: left; margin: 10px auto 0 auto; padding-left: 20px; }
+
+        /* Tablas Ajustadas para 4 Columnas */
+        .metrics-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 10px; }
+        .metrics-table th, .metrics-table td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
+        .metrics-table th { 
+            background-color: #e8f5e9; 
+            color: #2e7d32; 
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 9px;
+        }
+        .table-section-header {
+            background-color: #fafafa;
+            color: #666;
+            font-weight: bold;
+            text-align: center;
+            font-size: 10px;
+            padding: 4px;
+            letter-spacing: 1px;
+        }
+
+        /* Imágenes */
+        .comparison-section { margin-top: 25px; page-break-inside: avoid; }
+        .section-title { color: #2e7d32; border-bottom: 1px solid #ccc; margin-bottom: 10px; font-size: 14px; padding-bottom: 5px; }
+        
+        .img-row {
+            width: 100%; margin-bottom: 20px; display: table; table-layout: fixed; border-spacing: 10px 0;
+        }
+        .img-col { display: table-cell; width: 48%; vertical-align: top; text-align: center; }
+        .img-box { border: 1px solid #eee; padding: 5px; border-radius: 4px; }
+        .img-col img { width: 100%; height: 100px; object-fit: contain; display: block; }
+        .img-label { font-size: 9px; color: #777; margin-bottom: 5px; text-transform: uppercase; font-weight: bold; letter-spacing: 0.5px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <div class="meta-item"><span class="meta-label">Fecha:</span> {{ current_time }}</div>
+        <div class="meta-item"><span class="meta-label">Práctica:</span> {{ practice_number }}</div>
+        <div class="meta-item"><span class="meta-label">Ejercicio:</span> {{ label }}</div>
+        <div class="meta-item"><span class="meta-label">Género Ref.:</span> {{ gender }}</div>
+    </div>
+
+    <div class="score-box">
+        <div class="score-number">{{ score_pct }}%</div>
+        <div class="advice-text">"{{ advice_phrase }}"</div>
+        <div class="advice-list">
+            <ul>
+            {% for consejo in advice_list %}
+                <li>{{ consejo | safe }}</li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <h4 class="section-title">Métricas Acústicas</h4>
+    <table class="metrics-table">
+        <thead>
+            <tr>
+                <th style="width: 30%;">Parámetro</th>
+                <th style="width: 15%;">Valor Usuario</th>
+                <th style="width: 20%;">Referencia en Condiciones Clínicas</th> <th>Descripción Clínica</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td colspan="4" class="table-section-header">FUENTE GLÓTICA</td>
+            </tr>
+            <tr>
+                <td><strong>Frecuencia Fundamental Promedio (Pitch/Tono)</strong></td>
+                <td>{{ mean_f0 }} Hz</td>
+                <td>
+                    {% if gender == 'male' %}
+                        90 - 155 Hz
+                    {% elif gender == 'female' %}
+                        165 - 255 Hz
+                    {% else %}
+                        100 - 250 Hz
+                    {% endif %}
+                </td>
+                <td>Frecuencia fundamental promedio</td>
+            </tr>
+            <tr>
+                <td><strong>Jitter (Local)</strong></td>
+                <td>{{ jitter }} %</td>
+                <td>&lt; 1.04 %</td> <td>Perturbación de frecuencia (Aspereza)</td>
+            </tr>
+            <tr>
+                <td><strong>Shimmer (Local)</strong></td>
+                <td>{{ shimmer }} %</td>
+                <td>&lt; 3.81 %</td> <td>Perturbación de amplitud (Ronquera)</td>
+            </tr>
+            <tr>
+                <td><strong>HNR</strong></td>
+                <td>{{ hnr }} dB</td>
+                <td>&gt; 20 dB</td> <td>Relación Armónico/Ruido (Calidad)</td>
+            </tr>
+
+            <tr>
+                <td colspan="4" class="table-section-header">FILTRO</td>
+            </tr>
+            <tr>
+                <td><strong>Formante F1</strong></td>
+                <td>{{ f1 }} Hz</td>
+                <td>-</td>
+                <td>Apertura mandibular / Altura lingual</td>
+            </tr>
+            <tr>
+                <td><strong>Formante F2</strong></td>
+                <td>{{ f2 }} Hz</td>
+                <td>-</td>
+                <td>Posición lingual (Anterior/Posterior)</td>
+            </tr>
+            <tr>
+                <td><strong>Formante F3</strong></td>
+                <td>{{ f3 }} Hz</td>
+                <td>-</td>
+                <td>Identidad fonética y resonancia</td>
+            </tr>
+            <tr>
+                <td><strong>Formante F4</strong></td>
+                <td>{{ f4 }} Hz</td>
+                <td>-</td>
+                <td>Cualidad tímbrica y tamaño del tracto</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4 class="section-title">Análisis Comparativo: Plantilla vs. Usuario</h4>
+    
+    <div class="img-row">
+        <div class="img-col">
+            <div class="img-label">Forma de Onda (Plantilla)</div>
+            <div class="img-box">
+                {% if img_template_wav %}
+                    <img src="data:image/png;base64,{{ img_template_wav }}">
+                {% else %}
+                    <div style="height:100px; line-height:100px; background:#f9f9f9; color:#ccc;">No disponible</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="img-col">
+            <div class="img-label">Forma de Onda (Usuario)</div>
+            <div class="img-box">
+                <img src="{{ img_clean_src }}">
+            </div>
+        </div>
+    </div>
+
+    <div class="img-row">
+        <div class="img-col">
+            <div class="img-label">Espectrograma (Plantilla)</div>
+            <div class="img-box">
+                {% if img_template_spec %}
+                    <img src="data:image/png;base64,{{ img_template_spec }}">
+                {% else %}
+                    <div style="height:100px; line-height:100px; background:#f9f9f9; color:#ccc;">No disponible</div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="img-col">
+            <div class="img-label">Espectrograma (Usuario)</div>
+            <div class="img-box">
+                <img src="data:image/png;base64,{{ img_formants_src }}">
+            </div>
+        </div>
+    </div>
+    <div class="footer-note">
+        Reporte generado automáticamente por la plataforma Dilo Conmigo<br>
+        Este análisis utiliza modelos estadísticos y de reconocimiento de voz ASR (Whisper) para evaluar la inteligibilidad. Los valores de referencia son obtenidos de la página oficial de Praat, libreria utilizada para el procesamiento de las señales. 
+    </div>
+</body>
+</html>

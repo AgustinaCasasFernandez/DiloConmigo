@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Contacto - Dilo Conmigo{% endblock %}
+
+{% block content %}
+<style>
+    .green-button {
+        display: flex;           /* Alinea ícono y texto horizontalmente */
+        align-items: center;     /* Centra verticalmente */
+        justify-content: center; /* Centra el contenido dentro del botón */
+        gap: 10px;               /* Espacio entre el ícono y el texto */
+        background-color: #28a745; 
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: background-color 0.2s;
+        margin: 0 auto; /* Para asegurar centrado si el padre lo permite */
+    }
+
+    .green-button:hover {
+        background-color: #218838;
+    }
+
+    .button-icon {
+        width: 20px;
+        height: 20px;
+    }
+</style>
+
+<section id="contacto" style="max-width: 600px; margin: 2rem auto;">
+    <h2 style="text-align: center; margin-bottom: 1rem;">¿Querés contactarnos?</h2>
+    <p style="text-align: center; font-size: 1rem; color: #dddddd; margin-bottom: 2rem;">
+        Completá el siguiente formulario para enviarnos tus dudas, sugerencias o comentarios. 
+        Nos pondremos en contacto con vos a la brevedad.
+    </p>
+    
+    <form action="/enviar_contacto" method="POST" style="display: flex; flex-direction: column; gap: 1.2rem;">
+        <div>
+            <label for="nombre">Nombre completo</label>
+            <input type="text" id="nombre" name="nombre" placeholder="Tu nombre..." required style="width: 100%; padding: 0.5rem;">
+        </div>
+
+        <div>
+            <label for="email">Correo electrónico</label>
+            <input type="email" id="email" name="email" placeholder="ejemplo@correo.com" required style="width: 100%; padding: 0.5rem;">
+        </div>
+
+        <div>
+            <label for="asunto">Asunto</label>
+            <input type="text" id="asunto" name="asunto" placeholder="Ej: duda sobre la práctica 2" required style="width: 100%; padding: 0.5rem;">
+        </div>
+
+        <div>
+            <label for="mensaje">Mensaje</label>
+            <textarea id="mensaje" name="mensaje" placeholder="Escribí tu mensaje..." rows="6" required style="width: 100%; padding: 0.5rem;"></textarea>
+        </div>
+
+        <div style="text-align: center;">
+            <button type="submit" class="green-button">
+                <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v9a2 2 0 002 2z" />
+                </svg>
+                <span>Enviar mensaje</span>
+            </button>              
+        </div>
+    </form>
+</section>
+{% endblock %}

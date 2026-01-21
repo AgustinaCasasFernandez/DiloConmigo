@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Dilo Conmigo{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.min.css">
+    <style>
+        /* Forzamos que los botones de Simple.css y los tuyos sean BLANCOS */
+        :root {
+            --accent: #ffffff; 
+            --accent-hover: #f0f0f0;
+        }
+
+        /* Estilo unificado para botones en Blanco */
+        .button, button, input[type="submit"], input[type="button"] {
+            background-color: #2e7d32 !important; 
+            color: #ffffff !important;            
+            border: 1px solid #2e7d32 !important; /* Borde gris suave */
+            padding: 0.7rem 1.2rem;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 0.95rem;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .button:hover, button:hover, input[type="submit"]:hover {
+            background-color: #f0f0f0 !important; /* Gris muy clarito al pasar mouse */
+            border-color: #999999 !important;
+        }
+        
+        .navbar {
+            font-size: 0.9rem; 
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: #2b2b2b;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            z-index: 1000;
+        }
+
+        .navbar-section {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .navbar-left {
+            justify-content: flex-start;
+        }
+
+        .navbar-right {
+            justify-content: flex-end;
+            /* Aumenté el gap general aquí también */
+            gap: 1.5rem; 
+        }
+
+        nav {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .dropdown {
+            position: relative;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: white;
+            color: black;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+            z-index: 1001;
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            display: block;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        body {
+            padding-top: 70px;
+        }
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <div class="navbar-section navbar-left">
+            <h1 style="margin: 0; font-size: 1.2rem;">Dilo Conmigo</h1>
+        </div>
+        <div class="navbar-section navbar-center">
+            <nav>
+                <a href="{{ '/' if active_page != 'home' else '#bienvenida' }}">Inicio</a>
+            
+                {% if active_page == 'home' %}
+                    
+                    <div class="dropdown">
+                        <a href="#practicas">Prácticas ▾</a>
+                        <div class="dropdown-content">
+                            <a href="/practica1">Fonemas</a>
+                            <a href="/practica2">Sílabas</a>
+                            <a href="/practica3">Palabras</a>
+                            <a href="/practica4">Frases</a>
+
+                        </div>
+                    </div>
+                    <a href="/contacto">Contacto</a>
+                {% else %}
+                    <div class="dropdown">
+                        <a href="#">Prácticas ▾</a>
+                        <div class="dropdown-content">
+                            <a href="/practica1">Fonemas</a>
+                            <a href="/practica2">Sílabas</a>
+                            <a href="/practica3">Palabras</a>
+                            <a href="/practica4">Frases</a>
+                        </div>
+                    </div>
+                    <a href="/">Contacto</a>
+                {% endif %}
+            </nav>   
+        </div>                     
+            <div class="navbar-section navbar-right">
+                <div class="pref-wrap" style="display:flex; align-items:center; gap: 1rem;">
+                    <label for="gender-select" style="font-size:.85rem; margin:0;">Voz:</label>
+                    
+                    <select id="gender-select" style="padding:.25rem .5rem; border-radius:10px; width: 150px;">
+                        <option value="neutral">Neutro</option>
+                        <option value="male">Masculino</option>
+                        <option value="female">Femenino</option>
+                    </select>
+                </div>
+                <span id="datetime" style="margin-left: 1rem;"></span>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2025 - Dilo Conmigo</p>
+    </footer>
+
+    <script>
+        function updateDateTime() {
+            const now = new Date();
+            const options = { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const formatted = now.toLocaleString('es-AR', options);
+            // Verificación simple para evitar error si no carga el elemento
+            const el = document.getElementById("datetime");
+            if (el) el.textContent = formatted;
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+    </script>
+    <script>
+        // --- Preferencia de género de voz (persistida en localStorage) ---
+        (function initGenderPreference(){
+          const KEY = "dc_gender";
+          const sel = document.getElementById('gender-select');
+          
+          if(!sel) return;
+
+          function load() {
+            const saved = localStorage.getItem(KEY) || 'neutral';
+            sel.value = saved;
+          }
+          function save(v) {
+            localStorage.setItem(KEY, v);
+          }
+          sel.addEventListener('change', () => save(sel.value));
+          load();
+      
+          window.getPreferredGender = function() {
+            try { return localStorage.getItem(KEY) || 'neutral'; } catch { return 'neutral'; }
+          };
+        })();
+      </script>      
+</body>
+</html>

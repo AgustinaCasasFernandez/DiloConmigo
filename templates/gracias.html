@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Mensaje Enviado - Dilo Conmigo{% endblock %}
+
+{% block content %}
+<section id="gracias" style="max-width: 600px; margin: 2rem auto; text-align: center;">
+    
+    <div class="instruction-box" style="border-color: #4CAF50;">
+        <div class="instruction-header" style="justify-content: center;">
+            <svg xmlns="http://www.w3.org/2000/svg" class="instruction-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="color: #2e7d32; width: 32px; height: 32px;">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h3 class="instruction-title" style="color: #2e7d32; font-size: 1.5rem; margin-left: 0.5rem;">¡Mensaje Enviado!</h3>
+        </div>
+        <p class="instruction-text" style="color: #333; font-size: 1.1rem;">
+            Gracias por ponerte en contacto. Hemos recibido tu mensaje y te responderemos a la brevedad.
+        </p>
+    </div>
+
+    <a href="/" class="button" style="margin-top: 1.5rem; background-color: #4CAF50; color: white;">Volver al inicio</a>
+</section>
+
+<!-- 
+    Estos estilos son opcionales, pero ayudan a que se vea como 
+    los otros recuadros de la app 
+-->
+<style>
+  .instruction-box {
+    border: 2px solid #4CAF50;
+    background-color: #f0fff4;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.1);
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  }
+  .instruction-header { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    margin-bottom: 1rem; 
+  }
+  .instruction-icon { 
+    width: 28px; 
+    height: 28px; 
+    color: #388e3c; 
+    margin-right: 0.75rem; 
+    flex-shrink: 0; 
+  }
+  .instruction-title { 
+    font-size: 1.25rem; 
+    color: #2e7d32; 
+    margin: 0; 
+  }
+  .instruction-text { 
+    font-size: 1rem; 
+    color: #333; 
+    line-height: 1.6; 
+  }
+  .button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 0.7rem 1.2rem;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+  .button:hover {
+    background-color: #45a049;
+  }
+</style>
+{% endblock %}

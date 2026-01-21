@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}Práctica 4 - Dilo Conmigo{% endblock %}
+
+{% block content %}
+<section>
+  <h2>Práctica 4</h2>
+  <h3><em>Frases Cortas</em></h3>
+
+  <div class="instruction-box">
+    <div class="instruction-header">
+      <svg xmlns="http://www.w3.org/2000/svg" class="instruction-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 8z" />
+      </svg>
+      <h3 class="instruction-title">¿Cómo realizar este ejercicio?</h3>
+    </div>
+    <p class="instruction-text">
+      Leé atentamente la frase que se presenta a continuación. Luego, presioná “Grabar Audio” e intentá repetirla. <br><br>
+      Este ejercicio trabaja la inteligibilidad en oraciones completas. ¡Éxitos!
+    </p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span id="word-progress">Frase 1/21</span>
+    </div>
+    <div class="progress-bar" aria-hidden="true">
+      <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+    </div>
+  </div>
+
+  <div class="audio-navigation">
+    <button class="navigation-button" id="prev-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Anterior
+    </button>
+
+    <span id="current-word" class="current-word-text" aria-live="polite" style="text-align: center; color: #2e7d32; flex-grow: 1; padding: 0 1rem; font-size: 1.2rem;">
+      Cargando...
+    </span>
+
+    <button class="navigation-button" id="next-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      Siguiente
+    </button>
+  </div>
+
+  <div class="audio-button-container" style="margin-top: 2rem;">
+    <button class="green-button" id="toggle-record-btn">
+      <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 1 0 8 0V5a4 4 0 0 0-4-4zM5 10a1 1 0 1 0-2 0 9 9 0 0 0 18 0 1 1 0 1 0-2 0 7 7 0 0 1-14 0z"/>
+      </svg>
+      <span id="button-text">Grabar Audio</span>
+    </button>
+    <p id="recording-status" class="status-text" role="status"></p>
+
+    <div id="playback-section" style="display:none; margin-top:1rem;">
+      <audio id="recorded-audio" controls></audio>
+      <br><br>
+      <button class="green-button" id="download-btn" style="display:none; margin-top: 1rem;">
+        <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2 2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Descargar WAV
+      </button>
+    </div>
+  </div>
+</section>
+
+<div id="results-container">
+  {% if results %}
+    <h2>Tus Resultados</h2>
+
+    <div class="consejo-principal">
+      <h3 class="advice-title">{{ results.advice.overall_phrase }}</h3>
+      <h2 class="score-display">{{ results.advice.weighted_score_pct }}<span>/ 100</span></h2>
+      <h4>Consejos para Mejorar:</h4>
+      <ul>
+          {% for consejo in results.advice.improvement_list %}
+              <li>{{ consejo | safe }}</li>
+          {% endfor %}
+      </ul>
+    </div>
+
+    <div style="text-align: center; margin: 2rem 0;">
+      <button class="green-button" id="download-report-btn" onclick="downloadReport()">
+        <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 20px; height: 20px; margin-right: 8px; vertical-align: middle;">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+        </svg>
+        Descargar Reporte PDF
+      </button>
+    </div>
+
+  {% else %}
+    <p>No hay resultados aún.</p>
+  {% endif %}
+</div>
+
+<a href="/">← Volver al inicio</a>
+
+<script>
+  // === CONFIGURACIÓN ===
+  const PRACTICE_ID = "practica4";
+  const ITEMS = [
+    "Yo me lavo los dientes antes de dormir.", "Las sillas están pintadas de verde.", "El barco se hundió en el río.",
+    "Mi hermano perdió su cartuchera.", "Todos mis amigos fueron a la fiesta.", "Mi tía me llevó al mar.",
+    "Yo guardé todos los juguetes.", "La escuela está cerrada.", "Los cereales con leche son deliciosos.",
+    "El señor pintó la casa.", "El partido de fútbol terminó.", "Mamá cortó la torta.",
+    "Papá se paró cerca de la puerta.", "Los chicos están afuera.", "Mi bicicleta se rompió.",
+    "Mamá me ayudó a cortar la carne.", "Las tazas rojas están en la cocina.", "Nosotros le compramos un reloj a papá.",
+    "El gato se subió a la cama.", "Las vacas estaban en el campo.", "Los bomberos apagaron el fuego."
+  ];
+  const ITEM_TYPE_NAME = "Frase";
+  const INDEX_KEY = `dc_${PRACTICE_ID}_index`;
+
+  function loadIndex() { const v = parseInt(localStorage.getItem(INDEX_KEY), 10); return Number.isFinite(v) && v >= 0 && v < ITEMS.length ? v : 0; }
+  function saveIndex(i) { localStorage.setItem(INDEX_KEY, String(i)); }
+  let idx = loadIndex();
+
+  const els = {
+      word: document.getElementById("current-word"),
+      progText: document.getElementById("word-progress"),
+      progFill: document.getElementById("progress-fill"),
+      recBtn: document.getElementById("toggle-record-btn"),
+      btnText: document.getElementById("button-text"),
+      status: document.getElementById("recording-status"),
+      recAudio: document.getElementById("recorded-audio"),
+      playback: document.getElementById("playback-section"),
+      dlBtn: document.getElementById("download-btn"),
+      results: document.getElementById("results-container"),
+      prevBtn: document.getElementById("prev-btn"),
+      nextBtn: document.getElementById("next-btn")
+  };
+
+  let mediaRecorder; let audioChunks = []; let isRecording = false; let currentStream = null;
+
+  function updateUI() {
+    els.word.textContent = ITEMS[idx];
+    els.progText.textContent = `${ITEM_TYPE_NAME} ${idx + 1}/${ITEMS.length}`;
+    const pct = ITEMS.length > 1 ? (idx / (ITEMS.length - 1)) * 100 : 100;
+    els.progFill.style.width = `${pct}%`;
+    saveIndex(idx);
+    els.playback.style.display = 'none'; els.dlBtn.style.display = 'none'; els.recAudio.src = "";
+    els.status.textContent = ""; els.btnText.textContent = "Grabar Audio"; isRecording = false;
+    if (els.results) els.results.innerHTML = "<p style='text-align:center; color:#666;'>Completa el ejercicio para ver tus resultados.</p>";
+    setUIEnabled(true);
+  }
+  
+  function setUIEnabled(enabled) {
+      [els.recBtn, els.prevBtn, els.nextBtn].forEach(btn => {
+        if(btn) { btn.disabled = !enabled; btn.style.opacity = enabled ? 1 : 0.6; btn.style.cursor = enabled ? 'pointer' : 'not-allowed'; }
+      });
+  }
+
+  els.prevBtn.onclick = () => { idx = (idx - 1 + ITEMS.length) % ITEMS.length; updateUI(); };
+  els.nextBtn.onclick = () => { idx = (idx + 1) % ITEMS.length; updateUI(); };
+  updateUI();
+
+  // === REPORTE PDF (Simplificado) ===
+  function downloadReport() {
+    try {
+        const label = ITEMS[idx];
+        // Seleccionamos los elementos usando las clases del nuevo diseño
+        const advice_phrase = document.querySelector('.consejo-principal h3')?.textContent.trim() || "Análisis Completado";
+        const score_pct = document.querySelector('.score-display')?.innerText.trim().split('/')[0] || "0"; 
+        const advice_list = Array.from(document.querySelectorAll('.consejo-principal li')).map(li => li.innerHTML);
+        
+        const form = document.createElement('form');
+        form.method = 'POST'; form.action = '/download_report'; form.target = '_blank'; form.style.display = 'none';
+        
+        const data = {
+            label: label, 
+            practice_id: PRACTICE_ID, 
+            analysis_type: 'whisper_only', // Importante para que use pdf_lite
+            advice_phrase: advice_phrase, 
+            score_pct: score_pct, 
+            advice_list: JSON.stringify(advice_list)
+        };
+        
+        for (const key in data) {
+            const input = document.createElement('input'); input.type = 'hidden'; input.name = key; input.value = data[key]; form.appendChild(input);
+        }
+        document.body.appendChild(form); form.submit(); document.body.removeChild(form); 
+    } catch (err) { 
+        console.error(err);
+        alert("Error preparando reporte."); 
+    }
+  }
+
+  // Audio Utils
+  function audioBufferToWavMono(b){ const l=b.length,sr=b.sampleRate,ab=new ArrayBuffer(44+l*2),v=new DataView(ab),ws=(o,s)=>{for(let i=0;i<s.length;i++)v.setUint8(o+i,s.charCodeAt(i))};ws(0,"RIFF");v.setUint32(4,36+l*2,!0);ws(8,"WAVE");ws(12,"fmt ");v.setUint32(16,16,!0);v.setUint16(20,1,!0);v.setUint16(22,1,!0);v.setUint32(24,sr,!0);v.setUint32(28,sr*2,!0);v.setUint16(32,2,!0);v.setUint16(34,16,!0);ws(36,"data");v.setUint32(40,l*2,!0);const ch=b.numberOfChannels,m=new Float32Array(l);for(let c=0;c<ch;c++){const d=b.getChannelData(c);for(let i=0;i<l;i++)m[i]+=d[i]/ch}let o=44;for(let i=0;i<l;i++){const s=Math.max(-1,Math.min(1,m[i]));v.setInt16(o,s<0?s*0x8000:s*0x7FFF,!0);o+=2}return ab;}
+  function webmToWav(wb){ return new Promise(r=>{const c=new(window.AudioContext||window.webkitAudioContext)(),fr=new FileReader();fr.onload=e=>c.decodeAudioData(e.target.result).then(b=>r(new Blob([audioBufferToWavMono(b)],{type:"audio/wav"}))).catch(()=>r(wb));fr.readAsArrayBuffer(wb);});}
+
+  // Grabar
+  els.recBtn.addEventListener('click', async function () {
+    if (isRecording) {
+      if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+      isRecording = false; els.btnText.textContent = "Procesando..."; els.status.textContent = "Procesando audio..."; setUIEnabled(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+        currentStream = stream; audioChunks = [];
+        const mime = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg'].find(t => MediaRecorder.isTypeSupported(t));
+        mediaRecorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+        mediaRecorder.onstop = async () => {
+          const wavBlob = await webmToWav(new Blob(audioChunks, { type: mime || 'audio/webm' }));
+          const audioUrl = URL.createObjectURL(wavBlob);
+          els.recAudio.src = audioUrl; els.playback.style.display = 'block'; els.dlBtn.style.display = 'inline-block';
+          els.dlBtn.onclick = () => { const a = document.createElement('a'); a.href = audioUrl; a.download = `grabacion_${idx+1}.wav`; a.click(); };
+          els.status.textContent = "Analizando...";
+          const fd = new FormData();
+          fd.append('audio_data', wavBlob, `grabacion.wav`);
+          fd.append('label', ITEMS[idx]); fd.append('gender', (window.getPreferredGender && window.getPreferredGender()) || 'neutral');
+          fd.append('practice', PRACTICE_ID); fd.append('analysis_type', 'whisper_only');
+          try {
+              const res = await fetch('/upload_audio', { method: 'POST', body: fd });
+              const html = await res.text();
+              const newRes = new DOMParser().parseFromString(html, 'text/html').getElementById('results-container');
+              if (els.results && newRes) { els.results.innerHTML = newRes.innerHTML; els.status.textContent = "Análisis completado."; }
+          } catch (err) { els.status.textContent = "Error de conexión."; } 
+          finally { setUIEnabled(true); els.btnText.textContent = "Grabar Audio"; if (currentStream) { currentStream.getTracks().forEach(t => t.stop()); currentStream = null; } mediaRecorder = null; }
+        };
+        mediaRecorder.start(); isRecording = true; els.btnText.textContent = "Detener Grabación"; els.status.textContent = "Grabando..."; setUIEnabled(false); els.recBtn.disabled = false;
+      } catch (err) { els.status.textContent = "Error: Micrófono no disponible"; setUIEnabled(true); }
+    }
+  });
+</script>
+
+<style>
+  /* ESTILOS (Unificados) */
+  .instruction-box { border: 2px solid #4CAF50; background-color: #f0fff4; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 4px 8px rgba(76, 175, 80, 0.1); }
+  .instruction-header { display: flex; align-items: center; margin-bottom: 1rem; }
+  .instruction-icon { width: 28px; height: 28px; color: #388e3c; margin-right: 0.75rem; }
+  .instruction-title { font-size: 1.25rem; color: #2e7d32; margin: 0; }
+  .instruction-text { font-size: 1rem; color: #333; line-height: 1.6; }
+  .progress-wrap { margin: 10px 0 18px; }
+  .progress-top { display: flex; justify-content: space-between; font-size: .95rem; color: #2e7d32; margin-bottom: 6px; font-weight: 500;}
+  .progress-bar { width: 100%; height: 10px; background: #e8f5e9; border-radius: 9999px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #4CAF50; width: 0%; transition: width .25s ease; }
+  .audio-button-container { margin-bottom: 1.5rem; text-align: center; }
+  .green-button { background-color: #4CAF55; color: white; padding: 8px 16px; font-size: 14px; font-weight: 500; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+  .green-button:hover:not(:disabled) { background-color: #45a049; }
+  .green-button:disabled { background-color: #a5d6a7; opacity: 0.7; cursor: not-allowed; }
+  .button-icon { width: 24px; height: 24px; margin-right: 8px; vertical-align: middle; }
+  .audio-navigation { display: flex; justify-content: space-between; margin: 20px 0; gap: .75rem; }
+  .navigation-button { background-color: #f1f1ff; border: 1px solid #ccc; padding: 8px 16px; font-size: 14px; cursor: pointer; border-radius: 5px; transition: 0.2s; }
+  .navigation-button:hover:not(:disabled) { background-color: #d3f8d3; }
+  .navigation-button svg { width: 14px; height: 14px; }
+  .current-word-text { font-size: 1.1rem; font-weight: bold; color: #2e7d32; align-self: center; }
+  .status-text { font-size: 1rem; color: #555; font-weight: bold; min-height: 1.2em; margin-top: 10px;}
+  
+  /* Estilos Tarjeta Resultado */
+  .consejo-principal { background: #fff; border: 1px solid #4CAF50; border-left: 5px solid #2e7d32; color: #2e7d32; padding: 15px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: left; }
+  .consejo-principal h3 { font-size: 1.2em; text-align: center; color: #2e7d32; margin-top: 0; }
+  .score-display { font-size: 3em; margin: 10px 0 15px 0; text-align: center; color: #4CAF50; }
+  .score-display span { font-size: 0.4em; color: #6c757d; }
+  .consejo-principal h4 { color: #2e7d32; border-bottom: 1px solid #e8f5e9; padding-bottom: 8px; font-size: 1.1em; margin-top: 0;}
+  .consejo-principal ul { list-style-type: none; padding-left: 0; margin: 0; }
+  .consejo-principal li { font-size: 1em; margin-bottom: 10px; line-height: 1.5; }
+</style>
+{% endblock %}

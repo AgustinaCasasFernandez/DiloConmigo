@@ -1,0 +1,30 @@
+[
+  {
+    "score": 100,
+    "label": "El señor pintó la casa.",
+    "practice_name": "Frases",
+    "static_path": "uploads/el/grabacion_20260102161228.wav",
+    "date": "02/01/2026"
+  },
+  {
+    "score": 100,
+    "label": "Yo guardé todos los juguetes.",
+    "practice_name": "Frases",
+    "static_path": "uploads/yo/grabacion_20260102161238.wav",
+    "date": "02/01/2026"
+  },
+  {
+    "score": 93,
+    "label": "A",
+    "practice_name": "Fonemas",
+    "static_path": "uploads/a/grabacion_20260102161211.wav",
+    "date": "02/01/2026"
+  },
+  {
+    "score": 21,
+    "label": "Ña",
+    "practice_name": "Sílabas",
+    "static_path": "uploads/na/grabacion_20260102161254.wav",
+    "date": "02/01/2026"
+  }
+]

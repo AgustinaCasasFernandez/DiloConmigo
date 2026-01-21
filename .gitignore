@@ -1,0 +1,12 @@
+# Mac system files
+.DS_Store
+
+# Python virtual environments (Likely the cause of the 35k files)
+venv/
+env/
+.venv/
+__pycache__/
+.venv/
+.venv/
+__pycache__/
+*.wav

@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+
+{% block title %}Práctica 1 - Dilo Conmigo{% endblock %}
+
+{% block content %}
+<section>
+  <h2>Práctica 1</h2>
+  <h3><em>Fonemas</em></h3>
+
+  <div class="instruction-box">
+    <div class="instruction-header">
+      <svg xmlns="http://www.w3.org/2000/svg" class="instruction-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M12 20c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 8z" />
+      </svg>
+      <h3 class="instruction-title">¿Cómo realizar este ejercicio?</h3>
+    </div>
+    <p class="instruction-text">
+      Escuchá atentamente el fonema del audio. Luego, presioná “Grabar Audio” e intentá repetirlo. Es importante que guardes medio segundo de silencio previo a decir el sonido y una vez finalizado presiones "Detener Grabación". <br><br>
+      Este ejercicio apunta a mejorar la inteligibilidad, el control articulatorio y el timbre vocal, ¡recuerda descargar tu reporte para compartirlo con un profesional!
+    </p>
+  </div>
+  
+  <div class="progress-wrap">
+    <div class="progress-top">
+      <span id="word-progress">Fonema 1/6</span>
+    </div>
+    <div class="progress-bar" aria-hidden="true">
+      <div id="progress-fill" class="progress-fill" style="width: 0%;"></div>
+    </div>
+  </div>
+
+  <div class="audio-navigation">
+    <button class="navigation-button" id="prev-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      Anterior
+    </button>
+
+    <span id="current-word" class="current-word-text" aria-live="polite">a</span>
+
+    <button class="navigation-button" id="next-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+      </svg>
+      Siguiente
+    </button>
+  </div>
+
+  <div class="audio-button-container">
+    <button class="green-button" id="play-btn">
+      <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12 6-12 7z" />
+      </svg>
+      Reproducir Audio
+    </button>
+    <audio id="audio-player" preload="auto"></audio>
+  </div>
+
+  <div class="waveform-container" style="margin-top: 1rem; height: 150px; text-align: center;">
+    <img id="model-waveform-img" src="" alt="Onda del audio modelo" 
+         style="width: 70%; max-width: 1000px; height: 100px; border-radius: 4px; background-color: #f9f9f9; border: 1px solid #eee; display: none; margin: 0 auto;" 
+         onerror="this.style.display='none'" 
+         onload="this.style.display='block'">
+  </div>
+
+  <div class="audio-button-container">
+    <button class="green-button" id="toggle-record-btn">
+      <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 1 0 8 0V5a4 4 0 0 0-4-4zM5 10a1 1 0 1 0-2 0 9 9 0 0 0 18 0 1 1 0 1 0-2 0 7 7 0 0 1-14 0z"/>
+      </svg>
+      <span id="button-text">Grabar Audio</span>
+    </button>
+    <p id="recording-status" class="status-text" role="status"></p>
+
+    <div id="playback-section" style="display:none; margin-top:1rem;">
+      <audio id="recorded-audio" controls></audio>
+      <br><br>
+      <button class="green-button" id="download-btn" style="display:none; margin-top: 1rem;">
+          <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2 2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Descargar WAV
+      </button>
+    </div>
+  </div>
+</section>
+
+<div id="results-container">
+  {% if results %}
+    <h2>Tus resultados</h2>
+
+    <div id="hidden-metrics" style="display: none;">
+        {% if results.audio_info %}
+            <input type="hidden" id="meta-mean-f0" value="{{ results.audio_info.meanF0 | round(2) }}">
+            <input type="hidden" id="meta-jitter" value="{{ (results.audio_info.localJitter * 100) | round(3) }}">
+            <input type="hidden" id="meta-shimmer" value="{{ (results.audio_info.localShimmer * 100) | round(3) }}">
+            <input type="hidden" id="meta-hnr" value="{{ results.audio_info.hnr | round(2) }}">
+        {% endif %}
+        
+        {% if results.formants %}
+            <input type="hidden" id="meta-f1" value="{{ results.formants.f1_median | round(1) }}">
+            <input type="hidden" id="meta-f2" value="{{ results.formants.f2_median | round(1) }}">
+            <input type="hidden" id="meta-f3" value="{{ results.formants.f3_median | round(1) }}">
+            <input type="hidden" id="meta-f4" value="{{ results.formants.get('f4_median', 0) | round(1) }}">
+        {% endif %}
+
+        <input type="hidden" id="meta-transcripcion" value="{{ results.feedback.transcripcion }}">
+        <input type="hidden" id="meta-objetivo" value="{{ results.feedback.objetivo }}">
+    </div>
+
+    <div class="consejo-principal">
+      <h3>{{ results.advice.overall_phrase }}</h3>
+      <h2 class="score-display">{{ results.advice.weighted_score_pct }}<span>/ 100</span></h2>
+      <h4>Consejos para Mejorar:</h4>
+      <ul>
+          {% for consejo in results.advice.improvement_list %}
+              <li>{{ consejo | safe }}</li>
+          {% endfor %}
+      </ul>
+    </div>
+
+    <div class="comparison-grid">
+        <div class="grid-header">Modelo (Referencia Ideal)</div>
+        <div class="grid-header">Tu Grabación</div>
+
+        <div class="chart-card">
+            <div class="chart-title">Forma de Onda</div>
+            {% if img_tpl_wav %}
+                <img src="data:image/png;base64,{{ img_tpl_wav }}" alt="Onda Modelo">
+            {% else %}
+                <div class="no-data">No disponible</div>
+            {% endif %}
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">Forma de Onda</div>
+            <img src="{{ img_wav_clean }}" alt="Onda Usuario">
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">Melodía (Pitch)</div>
+            {% if img_tpl_pitch %}
+                <img src="{{ img_tpl_pitch }}" alt="Pitch Modelo">
+            {% else %}
+                <div class="no-data">No disponible</div>
+            {% endif %}
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">Melodía (Pitch)</div>
+            <img src="{{ img_pitch }}" alt="Pitch Usuario">
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">Espectrograma y Formantes</div>
+            {% if img_tpl_formants %}
+                <img src="data:image/png;base64,{{ img_tpl_formants }}" alt="Espectro Modelo">
+            {% else %}
+                <div class="no-data">No disponible</div>
+            {% endif %}
+        </div>
+        <div class="chart-card">
+            <div class="chart-title">Espectrograma y Formantes</div>
+            <img src="data:image/png;base64,{{ img_formants }}" alt="Espectro Usuario">
+        </div>
+    </div>
+
+    <div style="text-align: center; margin: 2rem 0;">
+      <button class="green-button" id="download-report-btn" onclick="downloadReport()">
+        <svg class="button-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2 2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        Descargar Reporte PDF
+      </button>
+    </div>
+  {% else %}
+    <p>No hay resultados aún. ¡Presiona "Grabar Audio" y practica!</p>
+  {% endif %}
+</div>
+
+<a href="/">← Volver al inicio</a>
+
+<script>
+  // === Configuración de Práctica ===
+  const PRACTICE_ID = "practica1";
+  const ITEMS = ["a", "u", "i", "sh", "o", "e"]; // Fonemas disponibles
+  const ITEM_TYPE_NAME = "Fonema";
+  const AUDIO_FOLDER = "{{ url_for('static', filename='audios/fonemas/') }}";
+  // Cambiamos 'audios_img' por 'img' que es donde el script de python las guardó
+  const WAVEFORM_FOLDER = "{{ url_for('static', filename='img/fonemas/') }}";
+  const INDEX_KEY = `dc_${PRACTICE_ID}_index`;
+
+  // === Gestión del Índice (Persistencia Local) ===
+  function loadIndex() {
+    const v = parseInt(localStorage.getItem(INDEX_KEY), 10);
+    return Number.isFinite(v) && v >= 0 && v < ITEMS.length ? v : 0;
+  }
+  function saveIndex(i) {
+    localStorage.setItem(INDEX_KEY, String(i));
+  }
+  let idx = loadIndex();
+
+  // === Elementos UI ===
+  const els = {
+      word: document.getElementById("current-word"),
+      audio: document.getElementById("audio-player"),
+      imgModel: document.getElementById("model-waveform-img"),
+      progText: document.getElementById("word-progress"),
+      progFill: document.getElementById("progress-fill"),
+      recBtn: document.getElementById("toggle-record-btn"),
+      btnText: document.getElementById("button-text"),
+      status: document.getElementById("recording-status"),
+      recAudio: document.getElementById("recorded-audio"),
+      playback: document.getElementById("playback-section"),
+      dlBtn: document.getElementById("download-btn"),
+      results: document.getElementById("results-container"),
+      prevBtn: document.getElementById("prev-btn"),
+      nextBtn: document.getElementById("next-btn"),
+      playBtn: document.getElementById("play-btn")
+  };
+
+  // === Estado de Grabación ===
+  let mediaRecorder;
+  let audioChunks = [];
+  let isRecording = false;
+  let currentStream = null; 
+
+  // === Funciones de UI ===
+  function updateUI() {
+      const p = ITEMS[idx];
+      els.word.textContent = p;
+      els.audio.src = AUDIO_FOLDER + encodeURIComponent(p) + ".wav";
+      els.imgModel.src = WAVEFORM_FOLDER + encodeURIComponent(p) + ".png";
+      
+      // Progreso
+      els.progText.textContent = `${ITEM_TYPE_NAME} ${idx + 1}/${ITEMS.length}`;
+      const pct = ITEMS.length > 1 ? (idx / (ITEMS.length - 1)) * 100 : 100;
+      els.progFill.style.width = `${pct}%`;
+
+      // Reset de estado
+      els.audio.pause();
+      els.audio.currentTime = 0;
+      els.playback.style.display = 'none';
+      els.dlBtn.style.display = 'none';
+      els.recAudio.src = ""; 
+      els.status.textContent = "";
+      els.btnText.textContent = "Grabar Audio";
+      isRecording = false;
+      
+      // Limpiar resultados previos
+      if (els.results) els.results.innerHTML = "<p>No hay resultados aún.</p>";
+  }
+
+  function setUIEnabled(enabled) {
+      [els.recBtn, els.prevBtn, els.nextBtn, els.playBtn].forEach(btn => {
+          if(btn) {
+              btn.disabled = !enabled;
+              btn.style.opacity = enabled ? 1 : 0.6;
+              btn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+          }
+      });
+  }
+
+  // Navegación
+  els.prevBtn.onclick = () => { idx = (idx - 1 + ITEMS.length) % ITEMS.length; updateUI(); saveIndex(idx); };
+  els.nextBtn.onclick = () => { idx = (idx + 1) % ITEMS.length; updateUI(); saveIndex(idx); };
+  els.playBtn.onclick = () => els.audio.play();
+
+  // Inicializar
+  updateUI();
+
+
+  // =========================================================
+  // === Función Descargar Reporte PDF (ACTUALIZADA) ===
+  // =========================================================
+  function downloadReport() {
+    try {
+        const label = ITEMS[idx];
+        
+        // 1. Datos Visuales
+        const advice_phrase = document.querySelector('.consejo-principal h3')?.textContent.trim() || "Análisis Completado";
+        const score_pct = document.querySelector('.score-display')?.innerText.trim().split('/')[0] || "0"; 
+        const advice_list = Array.from(document.querySelectorAll('.consejo-principal li')).map(li => li.innerHTML);
+        
+        // 2. Imágenes del USUARIO (Importante usar los nuevos selectores)
+        const img_clean = document.querySelector('img[alt="Onda Usuario"]')?.src || "";
+        const img_pitch = document.querySelector('img[alt="Pitch Usuario"]')?.src || "";
+        const img_formants = document.querySelector('img[alt="Espectro Usuario"]')?.src || "";
+
+        // 3. Métricas Científicas
+        const meanF0 = document.getElementById('meta-mean-f0')?.value || 'N/A';
+        const jitter = document.getElementById('meta-jitter')?.value || 'N/A';
+        const shimmer = document.getElementById('meta-shimmer')?.value || 'N/A';
+        const hnr = document.getElementById('meta-hnr')?.value || 'N/A';
+        
+        const f1 = document.getElementById('meta-f1')?.value || 'N/A';
+        const f2 = document.getElementById('meta-f2')?.value || 'N/A';
+        const f3 = document.getElementById('meta-f3')?.value || 'N/A';
+        const f4 = document.getElementById('meta-f4')?.value || 'N/A';
+        
+        const gender = (window.getPreferredGender && window.getPreferredGender()) || 'Neutral';
+
+        // 4. Enviar Formulario
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/download_report'; 
+        form.target = '_blank'; 
+        form.style.display = 'none';
+
+        const data = {
+            label: label,
+            practice_id: PRACTICE_ID,
+            gender: gender,
+            advice_phrase: advice_phrase,
+            score_pct: score_pct,
+            advice_list: JSON.stringify(advice_list),
+            
+            // Enviamos solo las del usuario, el backend regenera las de la plantilla
+            img_clean_src: img_clean,
+            img_pitch_src: img_pitch,
+            img_formants_src: img_formants,
+
+            mean_f0: meanF0, jitter: jitter, shimmer: shimmer, hnr: hnr,
+            f1: f1, f2: f2, f3: f3, f4: f4
+        };
+
+        for (const key in data) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = data[key];
+            form.appendChild(input);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form); 
+
+    } catch (err) {
+        console.error("Error en downloadReport:", err);
+        alert("Error generando el reporte PDF.");
+    }
+  }
+
+
+  // === Utilidades de Audio (WAV Converter) ===
+  function audioBufferToWavMono(buffer) {
+    const sampleRate = buffer.sampleRate;
+    const length = buffer.length;
+    const bufferSize = 44 + length * 2;
+    const ab = new ArrayBuffer(bufferSize);
+    const view = new DataView(ab);
+
+    const writeString = (offset, s) => { for (let i = 0; i < s.length; i++) view.setUint8(offset + i, s.charCodeAt(i)); };
+    
+    // WAV Header
+    writeString(0, "RIFF");
+    view.setUint32(4, 36 + length * 2, true);
+    writeString(8, "WAVE");
+    writeString(12, "fmt ");
+    view.setUint32(16, 16, true);        
+    view.setUint16(20, 1, true);         
+    view.setUint16(22, 1, true);         
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * 2, true);
+    view.setUint16(32, 2, true);
+    view.setUint16(34, 16, true);        
+    writeString(36, "data");
+    view.setUint32(40, length * 2, true);
+
+    // PCM Data (Mono Mix)
+    const numChannels = buffer.numberOfChannels;
+    const mono = new Float32Array(length);
+    for (let ch = 0; ch < numChannels; ch++) {
+      const channelData = buffer.getChannelData(ch);
+      for (let i = 0; i < length; i++) mono[i] += channelData[i] / numChannels;
+    }
+
+    let offset = 44;
+    for (let i = 0; i < length; i++) {
+      const s = Math.max(-1, Math.min(1, mono[i]));
+      view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+      offset += 2;
+    }
+    return ab;
+  }
+
+  function webmToWav(webmBlob) {
+    return new Promise((resolve) => {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const fr = new FileReader();
+      fr.onload = (e) => {
+        audioContext.decodeAudioData(e.target.result)
+          .then((audioBuffer) => {
+            const wavBuffer = audioBufferToWavMono(audioBuffer);
+            resolve(new Blob([wavBuffer], { type: "audio/wav" }));
+          })
+          .catch(() => resolve(webmBlob)); // Fallback
+      };
+      fr.onerror = () => resolve(webmBlob);
+      fr.readAsArrayBuffer(webmBlob);
+    });
+  }
+
+  // === Manejador del Botón Grabar ===
+  els.recBtn.addEventListener('click', async function () {
+    if (isRecording) {
+      // --- DETENER ---
+      if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop();
+      isRecording = false;
+      els.btnText.textContent = "Procesando...";
+      els.status.textContent = "Procesando audio...";
+      setUIEnabled(false);
+    } else {
+      // --- INICIAR ---
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true }
+        });
+        currentStream = stream;
+        audioChunks = [];
+        
+        const mimeType = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg'].find(t => MediaRecorder.isTypeSupported(t));
+        mediaRecorder = new MediaRecorder(stream, mimeType ? { mimeType } : undefined);
+
+        mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunks.push(e.data); };
+
+        mediaRecorder.onstop = async () => {
+          const webmBlob = new Blob(audioChunks, { type: mimeType || 'audio/webm' });
+          const wavBlob = await webmToWav(webmBlob);
+          const audioUrl = URL.createObjectURL(wavBlob);
+
+          // UI Grabación Local
+          els.recAudio.src = audioUrl;
+          els.playback.style.display = 'block';
+          els.dlBtn.style.display = 'inline-block';
+          els.dlBtn.onclick = () => {
+             const a = document.createElement('a');
+             a.href = audioUrl;
+             a.download = `grabacion_${ITEMS[idx]}.wav`;
+             a.click();
+          };
+
+          // Subir al Servidor
+          els.status.textContent = "Analizando...";
+          const formData = new FormData();
+          formData.append('audio_data', wavBlob, `grabacion_${ITEMS[idx]}.wav`);
+          formData.append('label', ITEMS[idx]);
+          formData.append('gender', (window.getPreferredGender && window.getPreferredGender()) || 'neutral');
+          formData.append('practice', PRACTICE_ID);
+          
+          try {
+              const response = await fetch('/upload_audio', { method: 'POST', body: formData });
+              const html = await response.text();
+              
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(html, 'text/html');
+              const newResults = doc.getElementById('results-container');
+              
+              if (els.results && newResults) {
+                  els.results.innerHTML = newResults.innerHTML; 
+                  els.status.textContent = "Análisis completado.";
+              } else {
+                  els.status.textContent = "Error visualizando resultados.";
+              }
+          } catch (err) {
+              console.error('Error fetch:', err);
+              els.status.textContent = "Error de conexión.";
+          } finally {
+              setUIEnabled(true);
+              els.btnText.textContent = "Grabar Audio";
+              
+              if (currentStream) {
+                  currentStream.getTracks().forEach(t => t.stop());
+                  currentStream = null;
+              }
+              mediaRecorder = null;
+          }
+        };
+        
+        mediaRecorder.start();
+        isRecording = true;
+        els.btnText.textContent = "Detener Grabación";
+        els.status.textContent = "Grabando...";
+        setUIEnabled(false);
+        els.recBtn.disabled = false; 
+
+      } catch (err) {
+        console.error('Error micrófono:', err);
+        els.status.textContent = "Error: No se pudo acceder al micrófono";
+        setUIEnabled(true);
+      }
+    }
+  });
+</script>
+
+<style>
+  /* Contenedores Básicos */
+  .instruction-box { border: 2px solid #4CAF50; background-color: #f0fff4; border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; box-shadow: 0 4px 8px rgba(76, 175, 80, 0.1); }
+  .instruction-header { display: flex; align-items: center; margin-bottom: 1rem; }
+  .instruction-icon { width: 28px; height: 28px; color: #388e3c; margin-right: 0.75rem; }
+  .instruction-title { font-size: 1.25rem; color: #2e7d32; margin: 0; }
+  .instruction-text { font-size: 1rem; color: #333; line-height: 1.6; }
+
+  /* Barra de Progreso */
+  .progress-wrap { margin: 10px 0 18px; }
+  .progress-top { display: flex; justify-content: space-between; font-size: .95rem; color: #2e7d32; margin-bottom: 6px; font-weight: 500;}
+  .progress-bar { width: 100%; height: 10px; background: #e8f5e9; border-radius: 9999px; overflow: hidden; }
+  .progress-fill { height: 100%; background: #4CAF50; width: 0%; transition: width .25s ease; }
+
+  /* Botones */
+  .audio-button-container { margin-bottom: 1.5rem; text-align: center; }
+  .green-button { background-color: #4CAF55; color: white; padding: 8px 16px; font-size: 14px; font-weight: 500; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+  .green-button:hover:not(:disabled) { background-color: #45a049; }
+  .green-button:disabled { background-color: #a5d6a7; opacity: 0.7; cursor: not-allowed; }
+  .button-icon { width: 24px; height: 24px; margin-right: 8px; vertical-align: middle; }
+
+  /* Navegación */
+  .audio-navigation { display: flex; justify-content: space-between; margin: 20px 0; gap: .75rem; }
+  .navigation-button { background-color: #f1f1ff; border: 1px solid #ccc; padding: 8px 16px; font-size: 14px; cursor: pointer; border-radius: 5px; transition: 0.2s; }
+  .navigation-button:hover:not(:disabled) { background-color: #d3f8d3; }
+  .navigation-button svg { width: 14px; height: 14px; }
+  .current-word-text { font-size: 1.1rem; font-weight: bold; color: #2e7d32; align-self: center; }
+  .status-text { font-size: 1rem; color: #555; font-weight: bold; min-height: 1.2em; margin-top: 10px;}
+
+  /* Resultados y Consejos */
+  .consejo-principal { background: #fff; border: 1px solid #4CAF50; border-left: 5px solid #2e7d32; color: #2e7d32; padding: 15px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); text-align: left; }
+  .consejo-principal h3 { font-size: 1.2em; text-align: center; color: #2e7d32; margin-top: 0; }
+  .score-display { font-size: 3em; margin: 10px 0 15px 0; text-align: center; color: #4CAF50; }
+  .score-display span { font-size: 0.4em; color: #6c757d; }
+  .consejo-principal h4 { color: #2e7d32; border-bottom: 1px solid #e8f5e9; padding-bottom: 8px; font-size: 1.1em; margin-top: 0;}
+  .consejo-principal ul { list-style-type: none; padding-left: 0; margin: 0; }
+  .consejo-principal li { font-size: 1em; margin-bottom: 10px; line-height: 1.5; }
+
+  /* === GRILLA COMPARATIVA PROFESIONAL === */
+  .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+      column-gap: 30px;
+      row-gap: 25px;
+      margin-bottom: 40px;
+  }
+
+  /* Encabezados Diferenciados por Color */
+  .grid-header {
+      text-align: center;
+      font-weight: 700;
+      padding: 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.5px;
+  }
+  /* Columna Izquierda (Modelo): Fondo Verde Suave */
+  .grid-header:nth-child(1) {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #c8e6c9;
+  }
+  /* Columna Derecha (Usuario): Fondo Gris/Azul Suave */
+  .grid-header:nth-child(2) {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+  }
+
+  /* Tarjetas de Gráficos */
+  .chart-card {
+      background: #fff;
+      border: 1px solid #e0e0e0; /* Borde sutil */
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+      transition: all 0.2s ease;
+      position: relative;
+  }
+  
+  /* Efecto "Elevación" al pasar el mouse */
+  .chart-card:hover {
+      border-color: #4CAF50;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+  }
+
+  .chart-title {
+      font-size: 0.75rem;
+      color: #888;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: block;
+      border-bottom: 1px solid #f0f0f0;
+      padding-bottom: 5px;
+  }
+
+  /* Imágenes: Altura fija para alineación perfecta */
+  .chart-card img {
+      width: 100%;
+      height: 140px; /* Forzar misma altura */
+      object-fit: contain; /* La imagen se ajusta sin deformarse */
+      display: block;
+  }
+
+  .no-data {
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #aaa;
+      font-style: italic;
+      background: #fafafa;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      border: 1px dashed #ddd;
+  }
+
+  /* Responsividad para móviles */
+  @media (max-width: 768px) {
+      .comparison-grid {
+          grid-template-columns: 1fr; /* Una sola columna en celular */
+      }
+      .grid-header { display: none; } /* Ocultar headers de tabla en móvil */
+      
+      .chart-card::before {
+          /* Poner etiqueta antes de cada tarjeta en móvil */
+          content: attr(data-label); 
+          font-weight: bold;
+          display: block;
+          margin-bottom: 5px;
+          color: #2e7d32;
+      }
+  }
+</style>
+
+{% endblock %}
